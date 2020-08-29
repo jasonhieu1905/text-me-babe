@@ -1,25 +1,37 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from "react";
+import "./App.css";
+import {Box, Container} from "@material-ui/core";
+import FormMessage from "./form-message/form-message";
+import Message from "./message/message";
+import db from './firebase';
 
 function App() {
+  const [messages, setMessages] = useState([]);
+
+  useEffect(() => {
+    db.collection('messages').onSnapshot(snapshot => {
+      const messageList = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          message: data.message,
+          id: data.id,
+        }
+      });
+      setMessages(messageList);
+    });
+  }, [])
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Container maxWidth="md">
+      <Box display="flex" className="container" flexDirection="column">
+        <div class="messages__container">
+          {messages.map(message => <Message key={message.id} message={message.message} />)}
+        </div>
+        <div class="footer">
+          <FormMessage />
+        </div>
+      </Box>
+    </Container>
   );
 }
 
